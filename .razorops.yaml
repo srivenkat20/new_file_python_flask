@@ -1,3 +1,4 @@
+version: v2
 
 tasks:
   build:
@@ -10,15 +11,15 @@ tasks:
       - pip install -r requirements.txt
     - commands:
       - python test.py
-
-      - export PATH="$(python3 -m site --user-base)/bin:$PATH"
-      # generate coverage reports
-      - coverage run test.py
-      - coverage report && coverage html
-    - cache/push:
+    - cache/push: 
         key: pip-deps-{{ checksum "requirements.txt" }}
         paths:
         - /usr/local/lib/python3.9/site-packages
     - reports/junit: test-reports/*.xml
-    - reports/html: 
-        dir: htmlcov
+    # build and push a Docker image. You will need to add the credentials in Dashboard
+    - docker/build:
+        image: srivenkat20/new_file
+        tags: ["${CI_COMMIT_SHA:0:8}", "${CI_REPO_BRANCH}", "latest"]
+        dockerfile: Dockerfile
+        context: hack
+        push: true
